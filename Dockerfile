@@ -1,22 +1,30 @@
-FROM php:8.2-apache
+# Use the official PHP image as a base image
+FROM php:8.3-fpm
 
-# Встановлюємо розширення PHP
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    && docker-php-ext-configure gd \
-    && docker-php-ext-install gd pdo pdo_mysql
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    git \
+    curl
 
-# Встановлюємо Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Install PHP extensions
+RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
 
-# Копіюємо файли проєкту
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy the existing application directory contents to the working directory
 COPY . /var/www/html
 
-# Встановлюємо права
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Запускаємо сервер
-CMD ["apache2-foreground"]
+# Expose port 9000 and start php-fpm server
+EXPOSE 9000
+CMD ["php-fpm"]

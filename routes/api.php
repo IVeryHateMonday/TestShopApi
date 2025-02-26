@@ -11,6 +11,7 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 
 
 
-Route::get('/test', function (){
+Route::middleware('auth:sanctum')->get('/test', function (){
     return response()->json(123);
-} );
+});
+
